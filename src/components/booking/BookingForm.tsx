@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 const services = [
   {
@@ -35,6 +36,27 @@ const services = [
   },
 ];
 
+const barbers = [
+  {
+    id: "elijah",
+    name: "Elijah",
+    rating: 4.9,
+    reviews: 84,
+  },
+  {
+    id: "daniel",
+    name: "Daniel",
+    rating: 4.8,
+    reviews: 67,
+  },
+  {
+    id: "john",
+    name: "John",
+    rating: 4.9,
+    reviews: 52,
+  },
+];
+
 const bookingSteps = [
   {
     number: "01",
@@ -63,8 +85,21 @@ function formatRupiah(price: number) {
 }
 
 export default function BookingForm() {
+  const searchParams = useSearchParams();
+
+  const barberFromUrl = searchParams.get("barber");
+
+  const initialBarber = barbers.some(
+    (barber) => barber.id === barberFromUrl
+  )
+    ? barberFromUrl
+    : null;
+
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const [selectedBarber, setSelectedBarber] = useState<string | null>(
+    initialBarber
+  );
 
    return (
   <>
@@ -148,7 +183,7 @@ export default function BookingForm() {
         <button
           type="button"
           disabled={!selectedService}
-          onClick={() => setCurrentStep(2)}
+          onClick={() => setCurrentStep(selectedBarber ? 3 : 2)}
           className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
         >
           Continue
@@ -157,30 +192,79 @@ export default function BookingForm() {
     </>
   )}
 
-  {currentStep === 2 && (
-    <>
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-        Step 02
-      </p>
+ {currentStep === 2 && (
+  <>
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+      Step 02
+    </p>
 
-      <h2 className="mt-3 text-2xl font-semibold">
-        Choose your barber
-      </h2>
+    <h2 className="mt-3 text-2xl font-semibold">
+      Choose your barber
+    </h2>
 
-      <p className="mt-3 text-sm leading-6 text-muted">
-        Select the barber you want for your appointment.
-      </p>
+    <p className="mt-3 text-sm leading-6 text-muted">
+      Select the barber you want for your appointment.
+    </p>
 
+    <div className="mt-8 grid gap-4 md:grid-cols-3">
+      {barbers.map((barber) => {
+        const isSelected = selectedBarber === barber.id;
+
+        return (
+          <button
+            key={barber.id}
+            type="button"
+            onClick={() => setSelectedBarber(barber.id)}
+            className={`rounded-xl border p-5 text-left transition-colors ${
+              isSelected
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary"
+            }`}
+          >
+            <div className="mb-5 flex aspect-[4/3.5] items-center justify-center rounded-lg bg-background">
+              <div className="flex flex-col items-center">
+                <div className="h-10 w-10 rounded-full bg-muted/40" />
+                <div className="mt-2 h-8 w-16 rounded-t-full bg-muted/40" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <span className="font-semibold">{barber.name}</span>
+
+              <span className="shrink-0 text-sm">
+                ★ {barber.rating}
+              </span>
+            </div>
+
+            <p className="mt-1 text-sm text-muted">
+              {barber.reviews} reviews
+            </p>
+          </button>
+        );
+      })}
+    </div>
+
+    <div className="mt-8 flex items-center justify-between">
       <button
         type="button"
         onClick={() => setCurrentStep(1)}
-        className="mt-8 text-sm font-medium underline underline-offset-4"
+        className="text-sm font-medium underline underline-offset-4"
       >
         Back to services
       </button>
-    </>
-  )}
-</div>
+
+      <button
+        type="button"
+        disabled={!selectedBarber}
+        onClick={() => setCurrentStep(3)}
+        className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Continue
+      </button>
+    </div>
+  </>
+)}
+    </div>
   </>
 );
 }
