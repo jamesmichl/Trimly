@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import ServiceCard from "@/components/service/ServiceCard";
 
 const bookingSteps = [
   {
@@ -16,6 +17,30 @@ const bookingSteps = [
     number: "03",
     title: "Book Your Slot",
     description: "Choose an available date and appointment slot that works for you.",
+  },
+];
+
+const featuredServices = [
+  {
+    id: 1,
+    name: "Signature Haircut",
+    description:
+      "A precision haircut tailored to your style, face shape, and preferences.",
+    price: "Rp75.000",
+  },
+  {
+    id: 2,
+    name: "Haircut + Wash",
+    description:
+      "A tailored haircut followed by a refreshing wash for a clean finish.",
+    price: "Rp100.000",
+  },
+  {
+    id: 3,
+    name: "Hair Coloring",
+    description:
+      "Professional hair coloring designed to refresh or redefine your look.",
+    price: "Rp150.000",
   },
 ];
 
@@ -78,6 +103,39 @@ export default function Home() {
                 </p>
               </div>
             ))}
+          </div>
+        </section>
+                <section className="border-t border-border bg-surface">
+          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+                  Our Services
+                </p>
+
+                <h2 className="mt-4 font-display text-4xl tracking-[-0.02em] sm:text-5xl">
+                  Grooming, done right.
+                </h2>
+              </div>
+
+              <Link
+                href="/services"
+                className="text-sm font-semibold text-primary transition-opacity hover:opacity-70"
+              >
+                View All Services →
+              </Link>
+            </div>
+
+            <div className="mt-12 grid gap-x-10 md:grid-cols-3">
+              {featuredServices.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  name={service.name}
+                  description={service.description}
+                  price={service.price}
+                />
+              ))}
+            </div>
           </div>
         </section>
       </main>
