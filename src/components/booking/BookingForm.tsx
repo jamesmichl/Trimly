@@ -95,6 +95,16 @@ function formatRupiah(price: number) {
   }).format(price);
 }
 
+function formatBookingDate(date: string) {
+  if (!date) return "";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${date}T00:00:00`));
+}
+
 export default function BookingForm() {
   const searchParams = useSearchParams();
 
@@ -114,6 +124,13 @@ export default function BookingForm() {
   const [selectedDate, setSelectedDate] = useState("");
   const today = new Date().toLocaleDateString("en-CA");
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const selectedServiceData = services.find(
+  (service) => service.id === selectedService
+);
+
+const selectedBarberData = barbers.find(
+  (barber) => barber.id === selectedBarber
+);
 
    return (
   <>
@@ -378,10 +395,75 @@ export default function BookingForm() {
 
       <button
         type="button"
-        disabled={!selectedTime}
+        onClick={() => setCurrentStep(5)}
         className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
       >
         Review booking
+      </button>
+    </div>
+  </>
+)}
+
+{currentStep === 5 && (
+  <>
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+      Booking Review
+    </p>
+
+    <h2 className="mt-3 text-2xl font-semibold">
+      Review your appointment
+    </h2>
+
+    <p className="mt-3 text-sm leading-6 text-muted">
+      Make sure everything looks right before confirming your booking.
+    </p>
+
+    <div className="mt-8 divide-y divide-border rounded-xl border border-border">
+      <div className="flex items-center justify-between gap-6 p-5">
+        <span className="text-sm text-muted">Service</span>
+
+        <div className="text-right">
+          <p className="font-medium">{selectedServiceData?.name}</p>
+          <p className="mt-1 text-sm text-muted">
+            {selectedServiceData
+              ? formatRupiah(selectedServiceData.price)
+              : ""}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-6 p-5">
+        <span className="text-sm text-muted">Barber</span>
+        <span className="font-medium">{selectedBarberData?.name}</span>
+      </div>
+
+      <div className="flex items-center justify-between gap-6 p-5">
+        <span className="text-sm text-muted">Date</span>
+        <span className="font-medium">
+          {formatBookingDate(selectedDate)}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between gap-6 p-5">
+        <span className="text-sm text-muted">Time</span>
+        <span className="font-medium">{selectedTime}</span>
+      </div>
+    </div>
+
+    <div className="mt-8 flex items-center justify-between">
+      <button
+        type="button"
+        onClick={() => setCurrentStep(4)}
+        className="text-sm font-medium underline underline-offset-4"
+      >
+        Back to time
+      </button>
+
+      <button
+        type="button"
+        className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
+      >
+        Confirm booking
       </button>
     </div>
   </>
