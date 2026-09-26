@@ -100,6 +100,8 @@ export default function BookingForm() {
   const [selectedBarber, setSelectedBarber] = useState<string | null>(
     initialBarber
   );
+  const [selectedDate, setSelectedDate] = useState("");
+  const today = new Date().toLocaleDateString("en-CA");
 
    return (
   <>
@@ -264,6 +266,60 @@ export default function BookingForm() {
     </div>
   </>
 )}
+
+{currentStep === 3 && (
+  <>
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+      Step 03
+    </p>
+
+    <h2 className="mt-3 text-2xl font-semibold">
+      Choose your date
+    </h2>
+
+    <p className="mt-3 text-sm leading-6 text-muted">
+      Select the date for your appointment.
+    </p>
+
+    <div className="mt-8 max-w-md">
+      <label
+        htmlFor="booking-date"
+        className="mb-2 block text-sm font-medium"
+      >
+        Appointment date
+      </label>
+
+      <input
+        id="booking-date"
+        type="date"
+        min={today}
+        value={selectedDate}
+        onChange={(event) => setSelectedDate(event.target.value)}
+        className="w-full rounded-xl border border-border bg-background px-4 py-3 outline-none transition-colors focus:border-primary"
+      />
+    </div>
+
+    <div className="mt-8 flex items-center justify-between">
+      <button
+        type="button"
+         onClick={() => setCurrentStep(initialBarber ? 1 : 2)}
+        className="text-sm font-medium underline underline-offset-4"
+      >
+        Back
+      </button>
+
+      <button
+        type="button"
+        disabled={!selectedDate}
+        onClick={() => setCurrentStep(4)}
+        className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Continue
+      </button>
+    </div>
+  </>
+)}
+
     </div>
   </>
 );
