@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  role      UserRole  @default(CUSTOMER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
+model Barber {
+  id        String           @id @default(cuid())
+  name      String
+  bio       String?
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  schedules BarberSchedule[]
+  bookings  Booking[]
+}
+
+model Service {
+  id        String    @id @default(cuid())
+  name      String
+  price     Int
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
+model BarberSchedule {
+  id        String    @id @default(cuid())
+  barberId  String
+  dayOfWeek DayOfWeek
+  slot      String
+
+  barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@unique([barberId, dayOfWeek, slot])
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  customerId      String
+  barberId        String
+  serviceId       String
+  bookingDate     DateTime      @db.Date
+  appointmentSlot String
+  priceAtBooking  Int
+  status          BookingStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  customer User    @relation(fields: [customerId], references: [id])
+  barber   Barber  @relation(fields: [barberId], references: [id])
+  service  Service @relation(fields: [serviceId], references: [id])
+  review   Review?
+  tip      Tip?
+
+  @@unique([barberId, bookingDate, appointmentSlot], where: raw("\"status\" IN ('PENDING', 'CONFIRMED')"))
+  @@index([customerId])
+  @@index([barberId, bookingDate])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  bookingId String   @unique
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model Tip {
+  id        String   @id @default(cuid())
+  bookingId String   @unique
+  amount    Int
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
