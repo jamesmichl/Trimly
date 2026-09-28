@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import CancelBookingButton from "@/components/booking/CancelBookingButton";
 import Navbar from "@/components/layout/Navbar";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -57,6 +58,13 @@ export default async function BookingDetailPage({
     notFound();
   }
 
+  const canCancel =
+    ["PENDING", "CONFIRMED"].includes(booking.status) &&
+    booking.bookingDate >=
+      new Date(
+        new Date().toISOString().slice(0, 10) + "T00:00:00.000Z",
+      );
+
   return (
     <>
       <Navbar />
@@ -109,7 +117,7 @@ export default async function BookingDetailPage({
           </div>
         </div>
 
-        <div className="mt-8 flex items-center justify-between">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/"
             className="text-sm font-medium underline underline-offset-4"
@@ -117,12 +125,16 @@ export default async function BookingDetailPage({
             Back to home
           </Link>
 
-          <Link
-            href="/book"
-            className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Book another appointment
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            {canCancel && <CancelBookingButton bookingId={booking.id} />}
+
+            <Link
+              href="/book"
+              className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Book another appointment
+            </Link>
+          </div>
         </div>
       </main>
     </>
