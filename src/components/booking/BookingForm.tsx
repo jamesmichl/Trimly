@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type BookingService = {
   id: string;
@@ -62,6 +62,7 @@ export default function BookingForm({
   barbers,
 }: BookingFormProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const barberFromUrl = searchParams.get("barber");
 
@@ -79,6 +80,8 @@ export default function BookingForm({
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [slotError, setSlotError] = useState<string | null>(null);
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   const today = new Date().toLocaleDateString("en-CA");
 
@@ -124,6 +127,54 @@ export default function BookingForm({
 
     fetchAvailability();
   }, [selectedBarber, selectedDate]);
+
+  async function handleConfirmBooking() {
+  if (!selectedService || !selectedBarber || !selectedDate || !selectedTime) {
+    return;
+  }
+
+  setIsBooking(true);
+  setBookingError(null);
+
+  try {
+    const response = await fetch("/api/bookings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        serviceId: selectedService,
+        barberId: selectedBarber,
+        date: selectedDate,
+        appointmentSlot: selectedTime,
+      }),
+    });
+
+    const data: {
+      booking?: {
+        id: string;
+        status: string;
+      };
+      error?: string;
+    } = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error ?? "Unable to create booking.");
+    }
+
+    if (!data.booking) {
+      throw new Error("Booking response is invalid.");
+    }
+
+    router.push(`/bookings/${data.booking.id}`);
+  } catch (error) {
+    setBookingError(
+      error instanceof Error ? error.message : "Unable to create booking.",
+    );
+  } finally {
+    setIsBooking(false);
+  }
+}
 
   return (
     <>
@@ -452,6 +503,10 @@ export default function BookingForm({
               </div>
             </div>
 
+            {bookingError && (
+              <p className="mt-4 text-sm text-red-600">{bookingError}</p>
+            )}
+
             <div className="mt-8 flex items-center justify-between">
               <button
                 type="button"
@@ -463,9 +518,11 @@ export default function BookingForm({
 
               <button
                 type="button"
-                className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
-              >
-                Confirm booking
+                onClick={handleConfirmBooking}
+                disabled={isBooking}
+                className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                {isBooking ? "Confirming..." : "Confirm booking"}
               </button>
             </div>
           </>
