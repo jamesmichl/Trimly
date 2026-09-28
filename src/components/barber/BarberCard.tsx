@@ -3,7 +3,7 @@ import Link from "next/link";
 type BarberCardProps = {
   id: string;
   name: string;
-  rating: number;
+  rating: number | null;
   reviewCount: number;
 };
 
@@ -37,13 +37,17 @@ export default function BarberCard({
         <div className="flex items-start justify-between gap-4">
           <h3 className="text-xl font-semibold">{name}</h3>
 
-          <span className="shrink-0 text-sm font-medium">
-            ★ {rating.toFixed(1)}
-          </span>
+          {rating !== null && (
+            <span className="shrink-0 text-sm font-medium">
+              ★ {rating.toFixed(1)}
+            </span>
+          )}
         </div>
 
         <p className="mt-2 text-sm text-muted">
-          {reviewCount} reviews
+          {reviewCount > 0
+            ? `${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}`
+            : "No reviews yet"}
         </p>
 
         <Link

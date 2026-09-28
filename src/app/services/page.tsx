@@ -1,52 +1,16 @@
 import Navbar from "@/components/layout/Navbar";
 import ServiceCard from "@/components/service/ServiceCard";
+import { prisma } from "@/lib/prisma";
 
-const services = [
-  {
-    id: 1,
-    name: "Signature Haircut",
-    description:
-      "A precision haircut tailored to your style, face shape, and preferences.",
-    price: "Rp75.000",
-  },
-  {
-    id: 2,
-    name: "Haircut + Wash",
-    description:
-      "A tailored haircut followed by a refreshing wash for a clean finish.",
-    price: "Rp100.000",
-  },
-  {
-    id: 3,
-    name: "Hair Coloring",
-    description:
-      "Professional hair coloring designed to refresh or redefine your look.",
-    price: "Rp150.000",
-  },
-  {
-    id: 4,
-    name: "Beard Trim",
-    description:
-      "A clean and precise beard trim to sharpen your overall look.",
-    price: "Rp50.000",
-  },
-  {
-    id: 5,
-    name: "Haircut + Beard Trim",
-    description:
-      "A complete grooming session combining a tailored haircut and beard trim.",
-    price: "Rp110.000",
-  },
-  {
-    id: 6,
-    name: "Premium Grooming",
-    description:
-      "A complete grooming experience for a polished and refreshed finish.",
-    price: "Rp175.000",
-  },
-];
-
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const services = await prisma.service.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
   return (
     <>
       <Navbar />
@@ -73,8 +37,8 @@ export default function ServicesPage() {
               <ServiceCard
                 key={service.id}
                 name={service.name}
-                description={service.description}
-                price={service.price}
+                description={service.description ?? "Service details coming soon."}
+                price={`Rp${service.price.toLocaleString("id-ID")}`}
               />
             ))}
           </div>

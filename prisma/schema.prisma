@@ -48,6 +48,7 @@ model User {
 model Barber {
   id        String           @id @default(cuid())
   name      String           @unique
+  slug      String?          @unique
   bio       String?
   isActive  Boolean          @default(true)
   createdAt DateTime         @default(now())
@@ -57,13 +58,14 @@ model Barber {
 }
 
 model Service {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  price     Int
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  bookings  Booking[]
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  price       Int
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
 }
 
 model BarberSchedule {

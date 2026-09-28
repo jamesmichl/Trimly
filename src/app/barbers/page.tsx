@@ -1,46 +1,34 @@
 import Navbar from "@/components/layout/Navbar";
 import BarberCard from "@/components/barber/BarberCard";
+import { prisma } from "@/lib/prisma";
 
-const barbers = [
-  {
-    id: "elijah",
-    name: "Elijah",
-    rating: 4.9,
-    reviewCount: 84,
-  },
-  {
-    id: "daniel",
-    name: "Daniel",
-    rating: 4.8,
-    reviewCount: 67,
-  },
-  {
-    id: "john",
-    name: "John",
-    rating: 4.9,
-    reviewCount: 52,
-  },
-  {
-    id: "michael",
-    name: "Michael",
-    rating: 4.7,
-    reviewCount: 46,
-  },
-  {
-    id: "ryan",
-    name: "Ryan",
-    rating: 4.8,
-    reviewCount: 39,
-  },
-  {
-    id: "jonathan",
-    name: "Jonathan",
-    rating: 4.9,
-    reviewCount: 31,
-  },
-];
+export default async function BarbersPage() {
+  const barbers = await prisma.barber.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    include: {
+      bookings: {
+        where: {
+          status: "COMPLETED",
+          review: {
+            isNot: null,
+          },
+        },
+        select: {
+          review: {
+            select: {
+              rating: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
-export default function BarbersPage() {
   return (
     <>
       <Navbar />
@@ -63,15 +51,29 @@ export default function BarbersPage() {
           </div>
 
           <div className="mt-16 grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
-            {barbers.map((barber) => (
-              <BarberCard
-                key={barber.id}
-                id={barber.id}
-                name={barber.name}
-                rating={barber.rating}
-                reviewCount={barber.reviewCount}
-              />
-            ))}
+            {barbers.map((barber) => {
+              const ratings = barber.bookings
+                .map((booking) => booking.review?.rating)
+                .filter((rating): rating is number => rating !== undefined);
+
+              const reviewCount = ratings.length;
+
+              const averageRating =
+                reviewCount > 0
+                  ? ratings.reduce((total, rating) => total + rating, 0) /
+                    reviewCount
+                  : null;
+
+              return (
+                <BarberCard
+                  key={barber.id}
+                  id={barber.slug ?? barber.id}
+                  name={barber.name}
+                  rating={averageRating}
+                  reviewCount={reviewCount}
+                />
+              );
+            })}
           </div>
         </section>
       </main>

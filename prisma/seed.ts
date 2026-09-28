@@ -18,44 +18,59 @@ const prisma = new PrismaClient({
 
 async function main() {
   const services = [
-    {
-      name: "Signature Haircut",
-      price: 75000,
-    },
-    {
-      name: "Haircut + Wash",
-      price: 100000,
-    },
-    {
-      name: "Hair Coloring",
-      price: 150000,
-    },
-    {
-      name: "Beard Trim",
-      price: 50000,
-    },
-    {
-      name: "Haircut + Beard Trim",
-      price: 110000,
-    },
-    {
-      name: "Premium Grooming",
-      price: 175000,
-    },
-  ];
+  {
+    name: "Signature Haircut",
+    description:
+      "A precision haircut tailored to your style, face shape, and preferences.",
+    price: 75000,
+  },
+  {
+    name: "Haircut + Wash",
+    description:
+      "A tailored haircut followed by a refreshing wash for a clean finish.",
+    price: 100000,
+  },
+  {
+    name: "Hair Coloring",
+    description:
+      "Professional hair coloring designed to refresh or redefine your look.",
+    price: 150000,
+  },
+  {
+    name: "Beard Trim",
+    description:
+      "A clean and precise beard trim to sharpen your overall look.",
+    price: 50000,
+  },
+  {
+    name: "Haircut + Beard Trim",
+    description:
+      "A complete grooming session combining a tailored haircut and beard trim.",
+    price: 110000,
+  },
+  {
+    name: "Premium Grooming",
+    description:
+      "A complete grooming experience for a polished and refreshed finish.",
+    price: 175000,
+  },
+];
 
   const barbers = [
-    {
-      name: "Elijah",
-      bio: "Known for clean, precise cuts and a refined approach to modern grooming.",
-    },
-    {
-      name: "Daniel",
-      bio: "Focused on sharp, versatile styles with careful attention to detail.",
-    },
-    {
-      name: "John",
-      bio: "Combines classic barbering with a modern, polished finish.",
+  {
+    name: "Elijah",
+    slug: "elijah",
+    bio: "Known for clean, precise cuts and a refined approach to modern grooming.",
+  },
+  {
+    name: "Daniel",
+    slug: "daniel",
+    bio: "Focused on sharp, versatile styles with careful attention to detail.",
+  },
+  {
+    name: "John",
+    slug: "john",
+    bio: "Combines classic barbering with a modern, polished finish.",
     },
   ];
 
@@ -65,6 +80,7 @@ async function main() {
         name: service.name,
       },
       update: {
+        description: service.description,
         price: service.price,
         isActive: true,
       },
@@ -78,6 +94,7 @@ async function main() {
         name: barber.name,
       },
       update: {
+        slug: barber.slug,
         bio: barber.bio,
         isActive: true,
       },
