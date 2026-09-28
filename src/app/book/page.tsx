@@ -1,8 +1,38 @@
 import Navbar from "@/components/layout/Navbar";
 import BookingForm from "@/components/booking/BookingForm";
+import { prisma } from "@/lib/prisma";
 
+export default async function BookPage() {
+  const [services, barbers] = await Promise.all([
+  prisma.service.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+    },
+  }),
 
-export default function BookPage() {
+  prisma.barber.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+    },
+  }),
+]);
+
   return (
     <>
       <Navbar />
@@ -23,7 +53,8 @@ export default function BookPage() {
               appointment slot.
             </p>
           </div>
-          <BookingForm />
+
+          <BookingForm services={services} barbers={barbers} />
         </section>
       </main>
     </>
