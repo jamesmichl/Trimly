@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     "SATURDAY",
   ] as const;
 
-  const dayOfWeek = dayOfWeekMap[bookingDate.getDay()];
+  const dayOfWeek = dayOfWeekMap[bookingDate.getUTCDay()];
 
   const schedule = await prisma.barberSchedule.findFirst({
     where: {

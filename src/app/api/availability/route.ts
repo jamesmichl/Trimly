@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const bookingDate = new Date(`${date}T00:00:00`);
+  const bookingDate = new Date(`${date}T00:00:00.000Z`);
 
   if (Number.isNaN(bookingDate.getTime())) {
     return NextResponse.json(
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const dayOfWeek = dayOfWeekMap[bookingDate.getDay()];
+  const dayOfWeek = dayOfWeekMap[bookingDate.getUTCDay()];
 
   const [schedules, existingBookings] = await Promise.all([
     prisma.barberSchedule.findMany({
