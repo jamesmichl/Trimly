@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 
 import CancelBookingButton from "@/components/booking/CancelBookingButton";
 import ReviewForm from "@/components/booking/ReviewForm";
+import TipForm from "@/components/booking/TipForm";
 import Navbar from "@/components/layout/Navbar";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -53,6 +54,7 @@ export default async function BookingDetailPage({
       service: true,
       barber: true,
       review: true,
+      tip: true,
     },
   });
 
@@ -69,6 +71,9 @@ export default async function BookingDetailPage({
 
   const canReview =
     booking.status === "COMPLETED" && booking.review === null;
+
+  const canTip =
+    booking.status === "COMPLETED" && booking.tip === null;
 
   return (
     <>
@@ -139,6 +144,25 @@ export default async function BookingDetailPage({
                 {booking.review.comment}
               </p>
             )}
+          </div>
+        )}
+
+        {canTip && <TipForm bookingId={booking.id} />}
+
+        {booking.tip && (
+          <div className="mt-8 rounded-2xl border border-border bg-surface p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Your Tip
+            </p>
+
+            <h2 className="mt-2 text-xl font-semibold">
+              {formatRupiah(booking.tip.amount)}
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-muted">
+              Tip recorded for {booking.barber.name}. No real payment was
+              processed.
+            </p>
           </div>
         )}
 
