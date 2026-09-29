@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import BookingStatusActions from "@/components/admin/BookingStatusActions";
 import Navbar from "@/components/layout/Navbar";
 import { auth } from "@/lib/auth";
+import { normalizeIndonesianPhoneNumber } from "@/lib/phone";
 import { prisma } from "@/lib/prisma";
 
 function formatRupiah(price: number) {
@@ -106,54 +107,74 @@ export default async function AdminBookingsPage() {
           </div>
         ) : (
           <div className="mt-12 space-y-4">
-            {bookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="rounded-2xl border border-border bg-surface p-6"
-              >
-                <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-lg font-semibold">
-                        {booking.service.name}
-                      </h2>
+            {bookings.map((booking) => {
+              const whatsappNumber = booking.customer.phoneNumber
+                ? normalizeIndonesianPhoneNumber(
+                    booking.customer.phoneNumber,
+                  )
+                : null;
 
-                      <span className="rounded-full border border-border px-3 py-1 text-xs font-medium">
-                        {booking.status}
-                      </span>
+              return (
+                <div
+                  key={booking.id}
+                  className="rounded-2xl border border-border bg-surface p-6"
+                >
+                  <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h2 className="text-lg font-semibold">
+                          {booking.service.name}
+                        </h2>
+
+                        <span className="rounded-full border border-border px-3 py-1 text-xs font-medium">
+                          {booking.status}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm text-muted">
+                        {booking.customer.name} · {booking.customer.email}
+                      </p>
+
+                      <p className="mt-1 text-sm text-muted">
+                        Phone:{" "}
+                        {booking.customer.phoneNumber ?? "Not provided"}
+                      </p>
+
+                      {whatsappNumber && (
+                        <a
+                          href={`https://wa.me/${whatsappNumber}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-block text-sm font-medium text-primary underline underline-offset-4"
+                        >
+                          Contact via WhatsApp
+                        </a>
+                      )}
+
+                      <p className="mt-4 text-sm font-medium">
+                        {formatBookingDate(booking.bookingDate)} ·{" "}
+                        {booking.appointmentSlot}
+                      </p>
+
+                      <p className="mt-1 text-sm text-muted">
+                        Barber: {booking.barber.name}
+                      </p>
+
+                      <BookingStatusActions
+                        bookingId={booking.id}
+                        status={booking.status}
+                      />
                     </div>
 
-                    <p className="mt-2 text-sm text-muted">
-                      {booking.customer.name} · {booking.customer.email}
-                    </p>
-
-                    <p className="mt-1 text-sm text-muted">
-                      Phone: {booking.customer.phoneNumber ?? "Not provided"}
-                    </p>
-
-                    <p className="mt-4 text-sm font-medium">
-                      {formatBookingDate(booking.bookingDate)} ·{" "}
-                      {booking.appointmentSlot}
-                    </p>
-
-                    <p className="mt-1 text-sm text-muted">
-                      Barber: {booking.barber.name}
-                    </p>
-
-                    <BookingStatusActions
-                      bookingId={booking.id}
-                      status={booking.status}
-                    />
-                  </div>
-
-                  <div className="md:text-right">
-                    <p className="font-medium">
-                      {formatRupiah(booking.priceAtBooking)}
-                    </p>
+                    <div className="md:text-right">
+                      <p className="font-medium">
+                        {formatRupiah(booking.priceAtBooking)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
