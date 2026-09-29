@@ -58,20 +58,31 @@ export async function PATCH(
     );
   }
 
-  const cancelledBooking = await prisma.booking.update({
+  const result = await prisma.booking.updateMany({
     where: {
       id: booking.id,
+      customerId: session.user.id,
+      status: booking.status,
     },
     data: {
       status: "CANCELLED",
     },
-    select: {
-      id: true,
-      status: true,
-    },
   });
 
+  if (result.count === 0) {
+    return NextResponse.json(
+      {
+        error:
+          "This booking changed while your cancellation was being processed. Please refresh and try again.",
+      },
+      { status: 409 },
+    );
+  }
+
   return NextResponse.json({
-    booking: cancelledBooking,
+    booking: {
+      id: booking.id,
+      status: "CANCELLED",
+    },
   });
 }
