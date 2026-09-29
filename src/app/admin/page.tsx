@@ -27,6 +27,59 @@ export default async function AdminPage() {
     redirect("/");
   }
 
+  const [
+    totalBookings,
+    pendingBookings,
+    confirmedBookings,
+    completedBookings,
+    cancelledBookings,
+  ] = await Promise.all([
+    prisma.booking.count(),
+    prisma.booking.count({
+      where: {
+        status: "PENDING",
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        status: "CONFIRMED",
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        status: "COMPLETED",
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        status: "CANCELLED",
+      },
+    }),
+  ]);
+
+  const stats = [
+    {
+      label: "Total Bookings",
+      value: totalBookings,
+    },
+    {
+      label: "Pending",
+      value: pendingBookings,
+    },
+    {
+      label: "Confirmed",
+      value: confirmedBookings,
+    },
+    {
+      label: "Completed",
+      value: completedBookings,
+    },
+    {
+      label: "Cancelled",
+      value: cancelledBookings,
+    },
+  ];
+
   return (
     <>
       <Navbar />
@@ -41,8 +94,25 @@ export default async function AdminPage() {
         </h1>
 
         <p className="mt-4 text-sm leading-6 text-muted">
-          Manage Trimly bookings, barbers, services, and schedules.
+          Monitor Trimly booking activity and day-to-day operations.
         </p>
+
+        <section className="mt-12">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl border border-border bg-surface p-6"
+              >
+                <p className="text-sm text-muted">{stat.label}</p>
+
+                <p className="mt-3 text-3xl font-semibold tracking-tight">
+                  {stat.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
     </>
   );
