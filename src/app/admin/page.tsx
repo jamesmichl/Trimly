@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import Navbar from "@/components/layout/Navbar";
@@ -111,6 +112,38 @@ export default async function AdminPage() {
                 </p>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="mt-12">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Management
+            </p>
+
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+              Manage Trimly
+            </h2>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Link
+              href="/admin/bookings"
+              className="rounded-2xl border border-border bg-surface p-6 transition-opacity hover:opacity-80"
+            >
+              <h3 className="text-lg font-semibold">
+                Bookings
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Review appointments, update booking statuses, and contact
+                customers.
+              </p>
+
+              <p className="mt-5 text-sm font-medium text-primary">
+                Manage bookings →
+              </p>
+            </Link>
           </div>
         </section>
       </main>
