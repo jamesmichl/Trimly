@@ -1,8 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import Navbar from "@/components/layout/Navbar";
 import { authClient } from "@/lib/auth-client";
@@ -12,6 +12,7 @@ export default function RegisterPage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function RegisterPage() {
     const { error } = await authClient.signUp.email({
       name,
       email,
+      phoneNumber,
       password,
     });
 
@@ -101,6 +103,30 @@ export default function RegisterPage() {
 
             <div>
               <label
+                htmlFor="phoneNumber"
+                className="mb-2 block text-sm font-medium"
+              >
+                Phone Number
+              </label>
+
+              <input
+                id="phoneNumber"
+                type="tel"
+                value={phoneNumber}
+                onChange={(event) => setPhoneNumber(event.target.value)}
+                required
+                autoComplete="tel"
+                placeholder="+62 812 3456 7890"
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 outline-none transition-colors focus:border-primary"
+              />
+
+              <p className="mt-2 text-xs text-muted">
+                Used by the barbershop to contact you about your appointment.
+              </p>
+            </div>
+
+            <div>
+              <label
                 htmlFor="password"
                 className="mb-2 block text-sm font-medium"
               >
@@ -123,11 +149,7 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            {error && (
-              <p className="text-sm text-red-600">
-                {error}
-              </p>
-            )}
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
             <button
               type="submit"
