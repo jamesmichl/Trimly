@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import BookingStatusActions from "@/components/admin/BookingStatusActions";
 import Navbar from "@/components/layout/Navbar";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -123,11 +124,11 @@ export default async function AdminBookingsPage() {
                     </div>
 
                     <p className="mt-2 text-sm text-muted">
-                        {booking.customer.name} · {booking.customer.email}
+                      {booking.customer.name} · {booking.customer.email}
                     </p>
 
                     <p className="mt-1 text-sm text-muted">
-                        Phone: {booking.customer.phoneNumber ?? "Not provided"}
+                      Phone: {booking.customer.phoneNumber ?? "Not provided"}
                     </p>
 
                     <p className="mt-4 text-sm font-medium">
@@ -138,6 +139,11 @@ export default async function AdminBookingsPage() {
                     <p className="mt-1 text-sm text-muted">
                       Barber: {booking.barber.name}
                     </p>
+
+                    <BookingStatusActions
+                      bookingId={booking.id}
+                      status={booking.status}
+                    />
                   </div>
 
                   <div className="md:text-right">
