@@ -7,6 +7,10 @@ import ReviewForm from "@/components/booking/ReviewForm";
 import TipForm from "@/components/booking/TipForm";
 import Navbar from "@/components/layout/Navbar";
 import { auth } from "@/lib/auth";
+import {
+  getBusinessDate,
+  getBusinessTime,
+} from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 
 function formatRupiah(price: number) {
@@ -62,12 +66,18 @@ export default async function BookingDetailPage({
     notFound();
   }
 
+  const bookingDate = booking.bookingDate
+    .toISOString()
+    .slice(0, 10);
+
+  const businessDate = getBusinessDate();
+  const businessTime = getBusinessTime();
+
   const canCancel =
     ["PENDING", "CONFIRMED"].includes(booking.status) &&
-    booking.bookingDate >=
-      new Date(
-        new Date().toISOString().slice(0, 10) + "T00:00:00.000Z",
-      );
+    (bookingDate > businessDate ||
+      (bookingDate === businessDate &&
+        booking.appointmentSlot > businessTime));
 
   const canReview =
     booking.status === "COMPLETED" && booking.review === null;
@@ -95,14 +105,19 @@ export default async function BookingDetailPage({
         <div className="mt-10 divide-y divide-border rounded-2xl border border-border bg-surface">
           <div className="flex items-center justify-between gap-6 p-6">
             <span className="text-sm text-muted">Status</span>
-            <span className="font-medium">{booking.status}</span>
+            <span className="font-medium">
+              {booking.status}
+            </span>
           </div>
 
           <div className="flex items-center justify-between gap-6 p-6">
             <span className="text-sm text-muted">Service</span>
 
             <div className="text-right">
-              <p className="font-medium">{booking.service.name}</p>
+              <p className="font-medium">
+                {booking.service.name}
+              </p>
+
               <p className="mt-1 text-sm text-muted">
                 {formatRupiah(booking.priceAtBooking)}
               </p>
@@ -111,11 +126,15 @@ export default async function BookingDetailPage({
 
           <div className="flex items-center justify-between gap-6 p-6">
             <span className="text-sm text-muted">Barber</span>
-            <span className="font-medium">{booking.barber.name}</span>
+
+            <span className="font-medium">
+              {booking.barber.name}
+            </span>
           </div>
 
           <div className="flex items-center justify-between gap-6 p-6">
             <span className="text-sm text-muted">Date</span>
+
             <span className="font-medium">
               {formatBookingDate(booking.bookingDate)}
             </span>
@@ -123,11 +142,16 @@ export default async function BookingDetailPage({
 
           <div className="flex items-center justify-between gap-6 p-6">
             <span className="text-sm text-muted">Time</span>
-            <span className="font-medium">{booking.appointmentSlot}</span>
+
+            <span className="font-medium">
+              {booking.appointmentSlot}
+            </span>
           </div>
         </div>
 
-        {canReview && <ReviewForm bookingId={booking.id} />}
+        {canReview && (
+          <ReviewForm bookingId={booking.id} />
+        )}
 
         {booking.review && (
           <div className="mt-8 rounded-2xl border border-border bg-surface p-6">
@@ -147,7 +171,9 @@ export default async function BookingDetailPage({
           </div>
         )}
 
-        {canTip && <TipForm bookingId={booking.id} />}
+        {canTip && (
+          <TipForm bookingId={booking.id} />
+        )}
 
         {booking.tip && (
           <div className="mt-8 rounded-2xl border border-border bg-surface p-6">
@@ -175,7 +201,11 @@ export default async function BookingDetailPage({
           </Link>
 
           <div className="flex flex-wrap items-center gap-3">
-            {canCancel && <CancelBookingButton bookingId={booking.id} />}
+            {canCancel && (
+              <CancelBookingButton
+                bookingId={booking.id}
+              />
+            )}
 
             <Link
               href="/book"

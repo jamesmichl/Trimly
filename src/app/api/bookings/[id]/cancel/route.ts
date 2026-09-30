@@ -2,6 +2,10 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import {
+  getBusinessDate,
+  getBusinessTime,
+} from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 
 type CancelBookingRouteProps = {
@@ -9,6 +13,10 @@ type CancelBookingRouteProps = {
     id: string;
   }>;
 };
+
+function formatBookingDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
 
 export async function PATCH(
   _request: Request,
@@ -48,12 +56,25 @@ export async function PATCH(
     );
   }
 
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
+  const bookingDate = formatBookingDate(booking.bookingDate);
+  const businessDate = getBusinessDate();
 
-  if (booking.bookingDate < today) {
+  if (bookingDate < businessDate) {
     return NextResponse.json(
       { error: "Past bookings cannot be cancelled." },
+      { status: 400 },
+    );
+  }
+
+  if (
+    bookingDate === businessDate &&
+    booking.appointmentSlot <= getBusinessTime()
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "This booking can no longer be cancelled because the appointment time has already started.",
+      },
       { status: 400 },
     );
   }

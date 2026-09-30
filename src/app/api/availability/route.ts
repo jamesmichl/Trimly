@@ -1,4 +1,9 @@
 import { DayOfWeek } from "@/generated/prisma/client";
+import {
+  getBusinessDate,
+  getBusinessTime,
+  parseBookingDate,
+} from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -29,10 +34,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+  const bookingDate = parseBookingDate(date);
+
+  if (!bookingDate) {
     return NextResponse.json(
       {
-        error: "date must use YYYY-MM-DD format",
+        error: "Invalid date. Use a real date in YYYY-MM-DD format.",
       },
       {
         status: 400,
@@ -40,12 +47,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const bookingDate = new Date(`${date}T00:00:00.000Z`);
+  const businessDate = getBusinessDate();
 
-  if (Number.isNaN(bookingDate.getTime())) {
+  if (date < businessDate) {
     return NextResponse.json(
       {
-        error: "Invalid date",
+        error: "Past dates are not available for booking.",
       },
       {
         status: 400,
@@ -108,9 +115,18 @@ export async function GET(request: NextRequest) {
     existingBookings.map((booking) => booking.appointmentSlot),
   );
 
+  const businessTime = getBusinessTime();
+
   const slots = schedules
     .map((schedule) => schedule.slot)
-    .filter((slot) => !occupiedSlots.has(slot));
+    .filter((slot) => !occupiedSlots.has(slot))
+    .filter((slot) => {
+      if (date !== businessDate) {
+        return true;
+      }
+
+      return slot > businessTime;
+    });
 
   return NextResponse.json({
     date,

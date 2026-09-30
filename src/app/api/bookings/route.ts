@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 
 import { auth } from "@/lib/auth";
+import {
+  getBusinessDate,
+  getBusinessTime,
+  parseBookingDate,
+} from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 
 type CreateBookingBody = {
@@ -11,6 +16,16 @@ type CreateBookingBody = {
   date?: string;
   appointmentSlot?: string;
 };
+
+const dayOfWeekMap = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+] as const;
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({
@@ -47,18 +62,45 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+  const bookingDate = parseBookingDate(date);
+
+  if (!bookingDate) {
     return NextResponse.json(
-      { error: "Date must use YYYY-MM-DD format." },
+      {
+        error: "Invalid date. Use a real date in YYYY-MM-DD format.",
+      },
       { status: 400 },
     );
   }
 
-  const bookingDate = new Date(`${date}T00:00:00.000Z`);
-
-  if (Number.isNaN(bookingDate.getTime())) {
+  if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(appointmentSlot)) {
     return NextResponse.json(
-      { error: "Invalid booking date." },
+      {
+        error: "Appointment slot must use HH:MM format.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const businessDate = getBusinessDate();
+
+  if (date < businessDate) {
+    return NextResponse.json(
+      {
+        error: "Past dates are not available for booking.",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (
+    date === businessDate &&
+    appointmentSlot <= getBusinessTime()
+  ) {
+    return NextResponse.json(
+      {
+        error: "This appointment time has already passed.",
+      },
       { status: 400 },
     );
   }
@@ -91,16 +133,6 @@ export async function POST(request: Request) {
       { status: 404 },
     );
   }
-
-  const dayOfWeekMap = [
-    "SUNDAY",
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
-  ] as const;
 
   const dayOfWeek = dayOfWeekMap[bookingDate.getUTCDay()];
 
@@ -135,7 +167,10 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ booking }, { status: 201 });
+    return NextResponse.json(
+      { booking },
+      { status: 201 },
+    );
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
