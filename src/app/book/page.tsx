@@ -1,37 +1,39 @@
+import { Suspense } from "react";
+
 import Navbar from "@/components/layout/Navbar";
 import BookingForm from "@/components/booking/BookingForm";
 import { prisma } from "@/lib/prisma";
 
 export default async function BookPage() {
   const [services, barbers] = await Promise.all([
-  prisma.service.findMany({
-    where: {
-      isActive: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-    select: {
-      id: true,
-      name: true,
-      price: true,
-    },
-  }),
+    prisma.service.findMany({
+      where: {
+        isActive: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+      },
+    }),
 
-  prisma.barber.findMany({
-    where: {
-      isActive: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-    },
-  }),
-]);
+    prisma.barber.findMany({
+      where: {
+        isActive: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+      },
+    }),
+  ]);
 
   return (
     <>
@@ -54,7 +56,18 @@ export default async function BookPage() {
             </p>
           </div>
 
-          <BookingForm services={services} barbers={barbers} />
+          <Suspense
+            fallback={
+              <p className="mt-10 text-sm text-muted">
+                Loading booking form...
+              </p>
+            }
+          >
+            <BookingForm
+              services={services}
+              barbers={barbers}
+            />
+          </Suspense>
         </section>
       </main>
     </>
