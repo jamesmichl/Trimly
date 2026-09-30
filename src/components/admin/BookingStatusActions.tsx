@@ -3,16 +3,22 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+type BookingStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "COMPLETED"
+  | "CANCELLED";
 
 type BookingStatusActionsProps = {
   bookingId: string;
   status: BookingStatus;
+  canComplete: boolean;
 };
 
 export default function BookingStatusActions({
   bookingId,
   status,
+  canComplete,
 }: BookingStatusActionsProps) {
   const router = useRouter();
 
@@ -40,19 +46,26 @@ export default function BookingStatusActions({
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error ?? "Unable to update booking.");
+        setError(
+          data.error ?? "Unable to update booking.",
+        );
         return;
       }
 
       router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(
+        "Something went wrong. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
   }
 
-  if (status === "COMPLETED" || status === "CANCELLED") {
+  if (
+    status === "COMPLETED" ||
+    status === "CANCELLED"
+  ) {
     return null;
   }
 
@@ -63,28 +76,37 @@ export default function BookingStatusActions({
           <button
             type="button"
             disabled={isLoading}
-            onClick={() => updateStatus("CONFIRMED")}
+            onClick={() =>
+              updateStatus("CONFIRMED")
+            }
             className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? "Updating..." : "Confirm"}
           </button>
         )}
 
-        {status === "CONFIRMED" && (
-          <button
-            type="button"
-            disabled={isLoading}
-            onClick={() => updateStatus("COMPLETED")}
-            className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isLoading ? "Updating..." : "Complete"}
-          </button>
-        )}
+        {status === "CONFIRMED" &&
+          canComplete && (
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={() =>
+                updateStatus("COMPLETED")
+              }
+              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isLoading
+                ? "Updating..."
+                : "Complete"}
+            </button>
+          )}
 
         <button
           type="button"
           disabled={isLoading}
-          onClick={() => updateStatus("CANCELLED")}
+          onClick={() =>
+            updateStatus("CANCELLED")
+          }
           className="rounded-full border border-border px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
         >
           Cancel

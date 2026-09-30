@@ -5,6 +5,10 @@ import { redirect } from "next/navigation";
 import BookingStatusActions from "@/components/admin/BookingStatusActions";
 import Navbar from "@/components/layout/Navbar";
 import { auth } from "@/lib/auth";
+import {
+  getBusinessDate,
+  getBusinessTime,
+} from "@/lib/date";
 import { normalizeIndonesianPhoneNumber } from "@/lib/phone";
 import { prisma } from "@/lib/prisma";
 
@@ -69,6 +73,9 @@ export default async function AdminBookingsPage() {
     ],
   });
 
+  const businessDate = getBusinessDate();
+  const businessTime = getBusinessTime();
+
   return (
     <>
       <Navbar />
@@ -99,7 +106,9 @@ export default async function AdminBookingsPage() {
 
         {bookings.length === 0 ? (
           <div className="mt-12 rounded-2xl border border-border bg-surface p-8">
-            <h2 className="text-xl font-semibold">No bookings yet.</h2>
+            <h2 className="text-xl font-semibold">
+              No bookings yet.
+            </h2>
 
             <p className="mt-2 text-sm text-muted">
               Customer appointments will appear here.
@@ -113,6 +122,15 @@ export default async function AdminBookingsPage() {
                     booking.customer.phoneNumber,
                   )
                 : null;
+
+              const bookingDate = booking.bookingDate
+                .toISOString()
+                .slice(0, 10);
+
+              const canComplete =
+                bookingDate < businessDate ||
+                (bookingDate === businessDate &&
+                  booking.appointmentSlot <= businessTime);
 
               return (
                 <div
@@ -132,12 +150,14 @@ export default async function AdminBookingsPage() {
                       </div>
 
                       <p className="mt-2 text-sm text-muted">
-                        {booking.customer.name} · {booking.customer.email}
+                        {booking.customer.name} ·{" "}
+                        {booking.customer.email}
                       </p>
 
                       <p className="mt-1 text-sm text-muted">
                         Phone:{" "}
-                        {booking.customer.phoneNumber ?? "Not provided"}
+                        {booking.customer.phoneNumber ??
+                          "Not provided"}
                       </p>
 
                       {whatsappNumber && (
@@ -152,8 +172,10 @@ export default async function AdminBookingsPage() {
                       )}
 
                       <p className="mt-4 text-sm font-medium">
-                        {formatBookingDate(booking.bookingDate)} ·{" "}
-                        {booking.appointmentSlot}
+                        {formatBookingDate(
+                          booking.bookingDate,
+                        )}{" "}
+                        · {booking.appointmentSlot}
                       </p>
 
                       <p className="mt-1 text-sm text-muted">
@@ -163,12 +185,15 @@ export default async function AdminBookingsPage() {
                       <BookingStatusActions
                         bookingId={booking.id}
                         status={booking.status}
+                        canComplete={canComplete}
                       />
                     </div>
 
                     <div className="md:text-right">
                       <p className="font-medium">
-                        {formatRupiah(booking.priceAtBooking)}
+                        {formatRupiah(
+                          booking.priceAtBooking,
+                        )}
                       </p>
                     </div>
                   </div>

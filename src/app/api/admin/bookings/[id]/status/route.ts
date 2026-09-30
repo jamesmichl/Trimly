@@ -2,11 +2,22 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import {
+  getBusinessDate,
+  getBusinessTime,
+} from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 
-type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+type BookingStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "COMPLETED"
+  | "CANCELLED";
 
-const allowedTransitions: Record<BookingStatus, BookingStatus[]> = {
+const allowedTransitions: Record<
+  BookingStatus,
+  BookingStatus[]
+> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
   CONFIRMED: ["COMPLETED", "CANCELLED"],
   COMPLETED: [],
@@ -46,7 +57,17 @@ export async function PATCH(
 
   const { id } = await context.params;
 
-  const body = await request.json();
+  let body: { status?: string };
+
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
+  }
+
   const status = body.status;
 
   if (
@@ -67,6 +88,8 @@ export async function PATCH(
     },
     select: {
       status: true,
+      bookingDate: true,
+      appointmentSlot: true,
     },
   });
 
@@ -88,6 +111,30 @@ export async function PATCH(
     );
   }
 
+  if (status === "COMPLETED") {
+    const bookingDate = booking.bookingDate
+      .toISOString()
+      .slice(0, 10);
+
+    const businessDate = getBusinessDate();
+    const businessTime = getBusinessTime();
+
+    const appointmentHasStarted =
+      bookingDate < businessDate ||
+      (bookingDate === businessDate &&
+        booking.appointmentSlot <= businessTime);
+
+    if (!appointmentHasStarted) {
+      return NextResponse.json(
+        {
+          error:
+            "This booking cannot be completed before the appointment time.",
+        },
+        { status: 400 },
+      );
+    }
+  }
+
   const result = await prisma.booking.updateMany({
     where: {
       id,
@@ -101,7 +148,8 @@ export async function PATCH(
   if (result.count === 0) {
     return NextResponse.json(
       {
-        error: "Booking status changed before this update. Please try again.",
+        error:
+          "Booking status changed before this update. Please try again.",
       },
       { status: 409 },
     );
