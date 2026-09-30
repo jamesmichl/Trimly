@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 
 import Navbar from "@/components/layout/Navbar";
 import { authClient } from "@/lib/auth-client";
+import {
+  isValidIndonesianPhoneNumber,
+  normalizeIndonesianPhoneNumber,
+} from "@/lib/phone";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -18,21 +22,36 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
-    setIsLoading(true);
     setError(null);
+
+    if (!isValidIndonesianPhoneNumber(phoneNumber)) {
+      setError(
+        "Please enter a valid Indonesian mobile phone number.",
+      );
+      return;
+    }
+
+    setIsLoading(true);
+
+    const normalizedPhoneNumber =
+      normalizeIndonesianPhoneNumber(phoneNumber);
 
     const { error } = await authClient.signUp.email({
       name,
       email,
-      phoneNumber,
+      phoneNumber: normalizedPhoneNumber,
       password,
     });
 
     if (error) {
-      setError(error.message ?? "Unable to create account.");
+      setError(
+        error.message ?? "Unable to create account.",
+      );
       setIsLoading(false);
       return;
     }
@@ -75,7 +94,9 @@ export default function RegisterPage() {
                 id="name"
                 type="text"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) =>
+                  setName(event.target.value)
+                }
                 required
                 autoComplete="name"
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 outline-none transition-colors focus:border-primary"
@@ -94,7 +115,9 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
                 required
                 autoComplete="email"
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 outline-none transition-colors focus:border-primary"
@@ -113,7 +136,9 @@ export default function RegisterPage() {
                 id="phoneNumber"
                 type="tel"
                 value={phoneNumber}
-                onChange={(event) => setPhoneNumber(event.target.value)}
+                onChange={(event) =>
+                  setPhoneNumber(event.target.value)
+                }
                 required
                 autoComplete="tel"
                 placeholder="+62 812 3456 7890"
@@ -121,7 +146,8 @@ export default function RegisterPage() {
               />
 
               <p className="mt-2 text-xs text-muted">
-                Used by the barbershop to contact you about your appointment.
+                Indonesian mobile number. Example: 0812 3456
+                7890.
               </p>
             </div>
 
@@ -137,7 +163,9 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
                 required
                 minLength={8}
                 autoComplete="new-password"
@@ -149,14 +177,20 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p className="text-sm text-red-600">
+                {error}
+              </p>
+            )}
 
             <button
               type="submit"
               disabled={isLoading}
               className="w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? "Creating account..." : "Create account"}
+              {isLoading
+                ? "Creating account..."
+                : "Create account"}
             </button>
           </form>
 
