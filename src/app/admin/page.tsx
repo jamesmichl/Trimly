@@ -105,7 +105,9 @@ export default async function AdminPage() {
                 key={stat.label}
                 className="rounded-2xl border border-border bg-surface p-6"
               >
-                <p className="text-sm text-muted">{stat.label}</p>
+                <p className="text-sm text-muted">
+                  {stat.label}
+                </p>
 
                 <p className="mt-3 text-3xl font-semibold tracking-tight">
                   {stat.value}
@@ -126,7 +128,7 @@ export default async function AdminPage() {
             </h2>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Link
               href="/admin/bookings"
               className="rounded-2xl border border-border bg-surface p-6 transition-opacity hover:opacity-80"
@@ -142,6 +144,41 @@ export default async function AdminPage() {
 
               <p className="mt-5 text-sm font-medium text-primary">
                 Manage bookings →
+              </p>
+            </Link>
+
+            <Link
+              href="/admin/barbers"
+              className="rounded-2xl border border-border bg-surface p-6 transition-opacity hover:opacity-80"
+            >
+              <h3 className="text-lg font-semibold">
+                Barbers
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Review barber information and control booking availability.
+              </p>
+
+              <p className="mt-5 text-sm font-medium text-primary">
+                Manage barbers →
+              </p>
+            </Link>
+
+            <Link
+              href="/admin/services"
+              className="rounded-2xl border border-border bg-surface p-6 transition-opacity hover:opacity-80"
+            >
+              <h3 className="text-lg font-semibold">
+                Services
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Review service pricing and control which services customers
+                can book.
+              </p>
+
+              <p className="mt-5 text-sm font-medium text-primary">
+                Manage services →
               </p>
             </Link>
           </div>
