@@ -53,12 +53,33 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const barber = await prisma.barber.findFirst({
+    where: {
+      id: barberId,
+      isActive: true,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!barber) {
+    return NextResponse.json(
+      {
+        error: "Active barber not found",
+      },
+      {
+        status: 404,
+      },
+    );
+  }
+
   const dayOfWeek = dayOfWeekMap[bookingDate.getUTCDay()];
 
   const [schedules, existingBookings] = await Promise.all([
     prisma.barberSchedule.findMany({
       where: {
-        barberId,
+        barberId: barber.id,
         dayOfWeek,
       },
       orderBy: {
@@ -71,7 +92,7 @@ export async function GET(request: NextRequest) {
 
     prisma.booking.findMany({
       where: {
-        barberId,
+        barberId: barber.id,
         bookingDate,
         status: {
           in: ["PENDING", "CONFIRMED"],
