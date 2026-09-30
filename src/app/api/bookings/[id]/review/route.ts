@@ -5,6 +5,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+type CreateReviewBody = {
+  rating?: unknown;
+  comment?: unknown;
+};
+
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -22,21 +27,44 @@ export async function POST(
 
   const { id } = await context.params;
 
-  const body = await request.json();
+  let body: CreateReviewBody;
+
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
+  }
+
   const rating = body.rating;
   const comment =
-    typeof body.comment === "string" ? body.comment.trim() : "";
+    typeof body.comment === "string"
+      ? body.comment.trim()
+      : "";
 
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+  if (
+    !Number.isInteger(rating) ||
+    typeof rating !== "number" ||
+    rating < 1 ||
+    rating > 5
+  ) {
     return NextResponse.json(
-      { error: "Rating must be an integer between 1 and 5." },
+      {
+        error:
+          "Rating must be an integer between 1 and 5.",
+      },
       { status: 400 },
     );
   }
 
   if (comment.length > 500) {
     return NextResponse.json(
-      { error: "Review comment cannot exceed 500 characters." },
+      {
+        error:
+          "Review comment cannot exceed 500 characters.",
+      },
       { status: 400 },
     );
   }
@@ -61,7 +89,10 @@ export async function POST(
 
   if (booking.status !== "COMPLETED") {
     return NextResponse.json(
-      { error: "Only completed bookings can be reviewed." },
+      {
+        error:
+          "Only completed bookings can be reviewed.",
+      },
       { status: 409 },
     );
   }
@@ -87,15 +118,24 @@ export async function POST(
     );
   } catch (error) {
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error instanceof
+        Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
       return NextResponse.json(
-        { error: "This booking has already been reviewed." },
+        {
+          error:
+            "This booking has already been reviewed.",
+        },
         { status: 409 },
       );
     }
 
-    throw error;
+    console.error("Failed to create review:", error);
+
+    return NextResponse.json(
+      { error: "Unable to create review." },
+      { status: 500 },
+    );
   }
 }

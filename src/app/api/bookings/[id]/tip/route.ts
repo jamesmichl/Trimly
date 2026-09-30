@@ -5,6 +5,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+type CreateTipBody = {
+  amount?: unknown;
+};
+
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -22,19 +26,39 @@ export async function POST(
 
   const { id } = await context.params;
 
-  const body = await request.json();
+  let body: CreateTipBody;
+
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
+  }
+
   const amount = body.amount;
 
-  if (!Number.isInteger(amount) || amount <= 0) {
+  if (
+    !Number.isInteger(amount) ||
+    typeof amount !== "number" ||
+    amount <= 0
+  ) {
     return NextResponse.json(
-      { error: "Tip amount must be a positive integer." },
+      {
+        error:
+          "Tip amount must be a positive integer.",
+      },
       { status: 400 },
     );
   }
 
   if (amount > 1_000_000) {
     return NextResponse.json(
-      { error: "Tip amount cannot exceed Rp1.000.000." },
+      {
+        error:
+          "Tip amount cannot exceed Rp1.000.000.",
+      },
       { status: 400 },
     );
   }
@@ -59,7 +83,10 @@ export async function POST(
 
   if (booking.status !== "COMPLETED") {
     return NextResponse.json(
-      { error: "Tips can only be given for completed bookings." },
+      {
+        error:
+          "Tips can only be given for completed bookings.",
+      },
       { status: 409 },
     );
   }
@@ -83,15 +110,24 @@ export async function POST(
     );
   } catch (error) {
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error instanceof
+        Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
       return NextResponse.json(
-        { error: "A tip has already been added to this booking." },
+        {
+          error:
+            "A tip has already been added to this booking.",
+        },
         { status: 409 },
       );
     }
 
-    throw error;
+    console.error("Failed to create tip:", error);
+
+    return NextResponse.json(
+      { error: "Unable to create tip." },
+      { status: 500 },
+    );
   }
 }
