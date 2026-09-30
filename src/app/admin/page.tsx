@@ -128,7 +128,7 @@ export default async function AdminPage() {
             </h2>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Link
               href="/admin/bookings"
               className="rounded-2xl border border-border bg-surface p-6 transition-opacity hover:opacity-80"
@@ -179,6 +179,23 @@ export default async function AdminPage() {
 
               <p className="mt-5 text-sm font-medium text-primary">
                 Manage services →
+              </p>
+            </Link>
+
+            <Link
+              href="/admin/schedules"
+              className="rounded-2xl border border-border bg-surface p-6 transition-opacity hover:opacity-80"
+            >
+              <h3 className="text-lg font-semibold">
+                Schedules
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Manage the fixed appointment slots available for each barber.
+              </p>
+
+              <p className="mt-5 text-sm font-medium text-primary">
+                Manage schedules →
               </p>
             </Link>
           </div>
