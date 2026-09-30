@@ -4,6 +4,8 @@ import Navbar from "@/components/layout/Navbar";
 import BookingForm from "@/components/booking/BookingForm";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function BookPage() {
   const [services, barbers] = await Promise.all([
     prisma.service.findMany({
