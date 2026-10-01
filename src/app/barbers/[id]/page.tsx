@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import { prisma } from "@/lib/prisma";
 
@@ -119,6 +120,8 @@ export default async function BarberProfilePage({
           </div>
         </section>
       </main>
+
+      <Footer />
     </>
   );
 }

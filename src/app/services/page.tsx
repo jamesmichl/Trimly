@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import ServiceCard from "@/components/service/ServiceCard";
 import { prisma } from "@/lib/prisma";
+import Footer from "@/components/layout/Footer";
 
 export default async function ServicesPage() {
   const services = await prisma.service.findMany({
@@ -45,6 +46,8 @@ export default async function ServicesPage() {
           </div>
         </section>
       </main>
+      
+      <Footer />
     </>
   );
 }

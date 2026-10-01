@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import Footer from "@/components/layout/Footer";
 import BarberCard from "@/components/barber/BarberCard";
 import Navbar from "@/components/layout/Navbar";
 import ServiceCard from "@/components/service/ServiceCard";
@@ -209,6 +209,8 @@ export default async function Home() {
           </div>
         </section>
       </main>
+
+      <Footer />
     </>
   );
 }

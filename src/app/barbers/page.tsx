@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import BarberCard from "@/components/barber/BarberCard";
 import { prisma } from "@/lib/prisma";
+import Footer from "@/components/layout/Footer";
 
 export default async function BarbersPage() {
   const barbers = await prisma.barber.findMany({
@@ -77,6 +78,7 @@ export default async function BarbersPage() {
           </div>
         </section>
       </main>
+      <Footer />
     </>
   );
 }
