@@ -53,9 +53,6 @@ export default function Navbar() {
           {!isPending &&
             (session ? (
               <>
-                <span className="hidden text-sm text-muted sm:inline">
-                  {session.user.name}
-                </span>
 
                 <button
                   type="button"

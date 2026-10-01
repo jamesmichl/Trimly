@@ -64,12 +64,18 @@ export default function BookingForm({
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const serviceFromUrl = searchParams.get("service");
   const barberFromUrl = searchParams.get("barber");
+
+  const initialService =
+    services.find((service) => service.id === serviceFromUrl)?.id ?? null;
 
   const initialBarber =
     barbers.find((barber) => barber.slug === barberFromUrl)?.id ?? null;
 
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<string | null>(
+  initialService,
+  );
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedBarber, setSelectedBarber] = useState<string | null>(
     initialBarber,

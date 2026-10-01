@@ -1,7 +1,9 @@
 import Link from "next/link";
+
+import BarberCard from "@/components/barber/BarberCard";
 import Navbar from "@/components/layout/Navbar";
 import ServiceCard from "@/components/service/ServiceCard";
-import BarberCard from "@/components/barber/BarberCard";
+import { prisma } from "@/lib/prisma";
 
 const bookingSteps = [
   {
@@ -12,61 +14,54 @@ const bookingSteps = [
   {
     number: "02",
     title: "Pick Your Barber",
-    description: "Browse barber profiles, specialties, and customer reviews.",
+    description: "Browse barber profiles, ratings, and customer reviews.",
   },
   {
     number: "03",
     title: "Book Your Slot",
-    description: "Choose an available date and appointment slot that works for you.",
+    description:
+      "Choose an available date and appointment slot that works for you.",
   },
 ];
 
-const featuredServices = [
-  {
-    id: 1,
-    name: "Signature Haircut",
-    description:
-      "A precision haircut tailored to your style, face shape, and preferences.",
-    price: "Rp75.000",
-  },
-  {
-    id: 2,
-    name: "Haircut + Wash",
-    description:
-      "A tailored haircut followed by a refreshing wash for a clean finish.",
-    price: "Rp100.000",
-  },
-  {
-    id: 3,
-    name: "Hair Coloring",
-    description:
-      "Professional hair coloring designed to refresh or redefine your look.",
-    price: "Rp150.000",
-  },
-];
+export default async function Home() {
+  const featuredServices = await prisma.service.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    take: 3,
+  });
 
-const featuredBarbers = [
-  {
-    id: "elijah",
-    name: "Elijah",
-    rating: 4.9,
-    reviewCount: 84,
-  },
-  {
-    id: "daniel",
-    name: "Daniel",
-    rating: 4.8,
-    reviewCount: 67,
-  },
-  {
-    id: "john",
-    name: "John",
-    rating: 4.9,
-    reviewCount: 52,
-  },
-];
+  const featuredBarbers = await prisma.barber.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    take: 3,
+    include: {
+      bookings: {
+        where: {
+          status: "COMPLETED",
+          review: {
+            isNot: null,
+          },
+        },
+        select: {
+          review: {
+            select: {
+              rating: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
-export default function Home() {
   return (
     <>
       <Navbar />
@@ -127,7 +122,8 @@ export default function Home() {
             ))}
           </div>
         </section>
-                <section className="border-t border-border bg-surface">
+
+        <section className="border-t border-border bg-surface">
           <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -152,48 +148,66 @@ export default function Home() {
               {featuredServices.map((service) => (
                 <ServiceCard
                   key={service.id}
+                  id={service.id}
                   name={service.name}
-                  description={service.description}
-                  price={service.price}
+                  description={
+                    service.description ?? "Service details coming soon."
+                  }
+                  price={`Rp${service.price.toLocaleString("id-ID")}`}
                 />
               ))}
             </div>
           </div>
         </section>
+
         <section>
-  <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
-    <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
-          Meet The Team
-        </p>
+          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+                  Meet The Team
+                </p>
 
-        <h2 className="mt-4 font-display text-4xl tracking-[-0.02em] sm:text-5xl">
-          Find your barber.
-        </h2>
-      </div>
+                <h2 className="mt-4 font-display text-4xl tracking-[-0.02em] sm:text-5xl">
+                  Find your barber.
+                </h2>
+              </div>
 
-      <Link
-        href="/barbers"
-        className="text-sm font-semibold text-primary transition-opacity hover:opacity-70"
-      >
-        View All Barbers →
-      </Link>
-    </div>
+              <Link
+                href="/barbers"
+                className="text-sm font-semibold text-primary transition-opacity hover:opacity-70"
+              >
+                View All Barbers →
+              </Link>
+            </div>
 
-    <div className="mt-12 grid gap-10 md:grid-cols-3">
-      {featuredBarbers.map((barber) => (
-        <BarberCard
-          key={barber.id}
-          id={barber.id}
-          name={barber.name}
-          rating={barber.rating}
-          reviewCount={barber.reviewCount}
-        />
-      ))}
-    </div>
-  </div>
-</section>
+            <div className="mt-12 grid gap-10 md:grid-cols-3">
+              {featuredBarbers.map((barber) => {
+                const ratings = barber.bookings
+                  .map((booking) => booking.review?.rating)
+                  .filter((rating): rating is number => rating !== undefined);
+
+                const reviewCount = ratings.length;
+
+                const averageRating =
+                  reviewCount > 0
+                    ? ratings.reduce((total, rating) => total + rating, 0) /
+                      reviewCount
+                    : null;
+
+                return (
+                  <BarberCard
+                    key={barber.id}
+                    id={barber.slug ?? barber.id}
+                    name={barber.name}
+                    rating={averageRating}
+                    reviewCount={reviewCount}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </section>
       </main>
     </>
   );

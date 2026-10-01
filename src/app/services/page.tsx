@@ -36,6 +36,7 @@ export default async function ServicesPage() {
             {services.map((service) => (
               <ServiceCard
                 key={service.id}
+                id={service.id}
                 name={service.name}
                 description={service.description ?? "Service details coming soon."}
                 price={`Rp${service.price.toLocaleString("id-ID")}`}

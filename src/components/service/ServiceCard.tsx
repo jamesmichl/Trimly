@@ -1,10 +1,14 @@
+import Link from "next/link";
+
 type ServiceCardProps = {
+  id: string;
   name: string;
   description: string;
   price: string;
 };
 
 export default function ServiceCard({
+  id,
   name,
   description,
   price,
@@ -24,9 +28,12 @@ export default function ServiceCard({
       </p>
 
       <div className="mt-auto pt-8">
-        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-          Select Service
-        </span>
+        <Link
+          href={`/book?service=${encodeURIComponent(id)}`}
+          className="text-xs font-semibold uppercase tracking-[0.18em] text-primary transition-opacity hover:opacity-70"
+        >
+          Select Service →
+        </Link>
       </div>
     </article>
   );
